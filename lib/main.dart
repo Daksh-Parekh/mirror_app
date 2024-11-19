@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gov_service_app/home_screen/provider/home_provider.dart';
-import 'package:gov_service_app/home_screen/views/home_page.dart';
-import 'package:gov_service_app/web_view_page/views/web_view.dart';
+import 'package:gov_service_app/views/home_screen/provider/home_provider.dart';
+import 'package:gov_service_app/utils/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -16,14 +15,17 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: HomeProvider(),
+          value: HomeProvider()..getThemes(),
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        routes: {
-          '/': (context) => HomePage(),
-          '/web_view': (context) => WebView(),
+      child: Consumer<HomeProvider>(
+        builder: (context, value, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            darkTheme: ThemeData.dark(),
+            themeMode: value.isTheme ? ThemeMode.dark : ThemeMode.light,
+            routes: AppRoutes.routes,
+          );
         },
       ),
     );
