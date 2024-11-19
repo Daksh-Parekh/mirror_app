@@ -15,7 +15,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: HomeProvider()..getThemes(),
+          value: HomeProvider()
+            ..getThemes()
+            ..getSearchIndex()
+            ..getSearchHistory(),
         ),
       ],
       child: Consumer<HomeProvider>(
