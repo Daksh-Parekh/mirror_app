@@ -13,6 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   InAppWebViewController? webViewController;
+  TextEditingController nameController = TextEditingController();
   late HomeProvider hRead, hWatch;
   // String url = '';
   var urlController = TextEditingController();
@@ -21,69 +22,146 @@ class _HomePageState extends State<HomePage> {
     hRead = context.read<HomeProvider>();
     hWatch = context.watch<HomeProvider>();
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 100,
-        title: Column(
+      drawer: Drawer(
+        child: Column(
           children: [
-            Text("Home Page"),
-            SearchBar(
-              controller: urlController,
-              onSubmitted: (value) {
-                // var url = WebUri(value);
-                // if (.isEmpty) {
-                // WebUri url = WebUri("");
-
-                webViewController?.loadUrl(
-                    urlRequest: URLRequest(
-                        url: WebUri(
-                            'https://www.google.com/search?q=${value}')));
-                hRead.saveSearchHistory(value);
+            Stack(
+              alignment: Alignment.topRight,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                UserAccountsDrawerHeader(
+                  decoration: BoxDecoration(color: Colors.purple.shade200),
+                  accountName: Text("Daksh"),
+                  accountEmail: Text("Daksh@gmail.com"),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 22, horizontal: 8),
+                  child: IconButton(
+                    onPressed: () {
+                      hRead.changeTheme();
+                    },
+                    icon: hWatch.isTheme
+                        ? Icon(
+                            Icons.light_mode_rounded,
+                            size: 40,
+                            color: Colors.amber,
+                          )
+                        : Icon(
+                            Icons.dark_mode_rounded,
+                            size: 40,
+                            color: Colors.black,
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.searchHistory);
+              },
+              title: Text("Search History"),
+              trailing: Icon(Icons.history),
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.bookMark);
+              },
+              title: Text("BookMark"),
+              trailing: Icon(Icons.bookmark_added_rounded),
+            ),
+            ListTile(
+              title: Text("Chrome"),
+              onTap: () {
+                hRead.setIndex(0);
+              },
+            ),
+            ListTile(
+              title: Text("yahoo"),
+              onTap: () {
+                hRead.setIndex(1);
               },
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.searchHistory);
-            },
-            icon: Icon(Icons.history),
-          ),
-          PopupMenuButton(
-            itemBuilder: (context) {
-              return [
-                PopupMenuItem(
-                  child: Text("Google"),
-                  onTap: () {
-                    hRead.setIndex(0);
-                  },
-                ),
-                PopupMenuItem(
-                  child: Text("Yahoo"),
-                  onTap: () {
-                    hRead.setIndex(1);
-                  },
-                ),
-              ];
-            },
-          ),
-          IconButton(
-            onPressed: () {
-              hRead.changeTheme();
-            },
-            icon: hWatch.isTheme
-                ? Icon(Icons.dark_mode_rounded)
-                : Icon(Icons.light_mode_rounded),
-          ),
-        ],
+      ),
+      appBar: AppBar(
+        title: Text("Home Page"),
+        // actions: [
+        //   PopupMenuButton(
+        //     onSelected: (value) {
+        //       hRead.setIndex(value);
+
+        //       WebUri? finaluri = hRead.allSearchEngine[value].searchEngUrl;
+        //       // 'https://www.google.co.in/';
+
+        //       webViewController?.loadUrl(urlRequest: URLRequest(url: finaluri));
+        //     },
+        //     itemBuilder: (context) {
+        //       return [
+        //         PopupMenuItem(
+        //           child: Text("Google"),
+        //           value: 0,
+        //           // onTap: () {
+        //           //   hRead.setIndex(0);
+        //           // },
+        //         ),
+        //         PopupMenuItem(
+        //           child: Text("Yahoo"),
+        //           value: 1,
+        //           // onTap: () {
+        //           //   hRead.setIndex(1);
+        //           // },
+        //         ),
+        //       ];
+        //     },
+        //   ),
+        // ],
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: SearchBar(
+                    leading: Icon(Icons.search),
+                    side: WidgetStatePropertyAll(
+                        BorderSide(color: Colors.black38)),
+                    controller: urlController,
+                    onSubmitted: (value) {
+                      // var url = WebUri(value);
+                      // if (.isEmpty) {
+                      // WebUri url = WebUri("");
+
+                      webViewController?.loadUrl(
+                          urlRequest: URLRequest(
+                              url: WebUri(
+                                  'https://www.google.com/search?q=${value}')));
+                      hRead.saveSearchHistory(value);
+                    },
+                    hintText: "Search",
+                  ),
+                ),
+                IconButton(
+                    onPressed: () async {
+                      if (webViewController != null) {
+                        WebUri? current = await webViewController!.getUrl();
+                        print("====================${current}");
+                        hRead.savedBookMarkUrl(current!.toString());
+                      }
+                    },
+                    icon: Icon(Icons.bookmark_add_rounded))
+              ],
+            ),
+          ),
           LinearProgressIndicator(
             value: hRead.progressValue,
           ),
           Text(
-            "${hRead.allSearchEngine[hWatch.index].title}",
+            "${hWatch.allSearchEngine[hWatch.index].title}",
           ),
           Expanded(
             child: InAppWebView(

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:gov_service_app/utils/helper/shr_helper.dart';
 import 'package:gov_service_app/views/home_screen/model/home_model.dart';
 
@@ -13,11 +14,11 @@ class HomeProvider with ChangeNotifier {
   List<SearchEngineModel> allSearchEngine = [
     SearchEngineModel(
       title: 'Google',
-      searchEngUrl: 'https://www.google.co.in/',
+      searchEngUrl: WebUri('https://www.google.co.in/'),
     ),
     SearchEngineModel(
       title: 'Yahho',
-      searchEngUrl: 'https://in.search.yahoo.com/?fr2=inr',
+      searchEngUrl: WebUri('https://in.search.yahoo.com/?fr2=inr'),
     ),
     SearchEngineModel(
       title: 'Safari',
@@ -40,9 +41,9 @@ class HomeProvider with ChangeNotifier {
   void setIndex(int inx) {
     index = inx;
     log('${index}');
-    notifyListeners();
     ShrHelper helps = ShrHelper();
     helps.saveSearchEngineIndex(index);
+    notifyListeners();
   }
 
   Future<void> getSearchIndex() async {
@@ -56,6 +57,7 @@ class HomeProvider with ChangeNotifier {
   }
 
   List<String> searchHistory = [];
+
   void saveSearchHistory(String value) {
     searchHistory.add(value);
     ShrHelper helper = ShrHelper();
@@ -70,9 +72,29 @@ class HomeProvider with ChangeNotifier {
 
   void removeSearchHistory(int index) {
     searchHistory.removeAt(index);
-
     ShrHelper helper = ShrHelper();
     helper.saveSearchHistory(searchHistory);
+    notifyListeners();
+  }
+
+  List<String> bookMark = [];
+  void savedBookMarkUrl(String url) {
+    // name??'Untited';
+    bookMark.add(url);
+    ShrHelper helps = ShrHelper();
+    helps.saveBookMarkUrl(bookMark);
+    notifyListeners();
+  }
+
+  Future<void> getBookmarkListUrl() async {
+    ShrHelper helps = ShrHelper();
+    bookMark = await helps.getBookMarkUrl() ?? ['Untited'];
+  }
+
+  void removeBookMarks(int index) {
+    bookMark.removeAt(index);
+    ShrHelper helps = ShrHelper();
+    helps.saveBookMarkUrl(bookMark);
     notifyListeners();
   }
 }

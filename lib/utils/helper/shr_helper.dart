@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ShrHelper {
@@ -33,5 +34,15 @@ class ShrHelper {
   Future<List<String>?> getSearchHistory() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getStringList('history');
+  }
+
+  Future<void> saveBookMarkUrl(List<String> bookmarkList) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('bookmark', bookmarkList);
+  }
+
+  Future<List<String>?> getBookMarkUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('bookmark');
   }
 }
