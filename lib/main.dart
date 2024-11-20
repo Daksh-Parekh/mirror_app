@@ -16,8 +16,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(
           value: HomeProvider()
-            ..getSearchIndex()
             ..getThemes()
+            ..getEngineCheckArrow()
+            ..getSearchIndex()
             ..getSearchHistory()
             ..getBookmarkListUrl(),
         ),

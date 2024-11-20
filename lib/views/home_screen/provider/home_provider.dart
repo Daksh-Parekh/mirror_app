@@ -10,18 +10,18 @@ class HomeProvider with ChangeNotifier {
   ThemeMode? mode;
   int index = 0;
   double progressValue = 0;
+  List<String> searchHistory = [];
+  List<String> bookMark = [];
+  bool isCheckEngine = true;
 
   List<SearchEngineModel> allSearchEngine = [
     SearchEngineModel(
       title: 'Google',
-      searchEngUrl: WebUri('https://www.google.co.in/'),
+      searchEngUrl: WebUri('https://www.google.co.in'),
     ),
     SearchEngineModel(
       title: 'Yahho',
-      searchEngUrl: WebUri('https://in.search.yahoo.com/?fr2=inr'),
-    ),
-    SearchEngineModel(
-      title: 'Safari',
+      searchEngUrl: WebUri('https://in.search.yahoo.com'),
     ),
   ];
 
@@ -56,8 +56,6 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> searchHistory = [];
-
   void saveSearchHistory(String value) {
     searchHistory.add(value);
     ShrHelper helper = ShrHelper();
@@ -77,7 +75,6 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> bookMark = [];
   void savedBookMarkUrl(String url) {
     // name??'Untited';
     bookMark.add(url);
@@ -88,13 +85,26 @@ class HomeProvider with ChangeNotifier {
 
   Future<void> getBookmarkListUrl() async {
     ShrHelper helps = ShrHelper();
-    bookMark = await helps.getBookMarkUrl() ?? ['Untited'];
+    bookMark = await helps.getBookMarkUrl() ?? [];
   }
 
   void removeBookMarks(int index) {
     bookMark.removeAt(index);
     ShrHelper helps = ShrHelper();
     helps.saveBookMarkUrl(bookMark);
+    notifyListeners();
+  }
+
+  void checkEngineStatus() {
+    isCheckEngine = !isCheckEngine;
+    ShrHelper helps = ShrHelper();
+    helps.saveEngineCheck(isCheckEngine);
+    notifyListeners();
+  }
+
+  void getEngineCheckArrow() async {
+    ShrHelper hepls = ShrHelper();
+    isCheckEngine = await hepls.getEngineCheckArrow() ?? false;
     notifyListeners();
   }
 }

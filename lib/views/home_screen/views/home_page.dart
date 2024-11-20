@@ -13,10 +13,22 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   InAppWebViewController? webViewController;
-  TextEditingController nameController = TextEditingController();
+  TextEditingController urlController = TextEditingController();
+  PullToRefreshController? pullToRefreshController;
+
   late HomeProvider hRead, hWatch;
-  // String url = '';
-  var urlController = TextEditingController();
+  @override
+  void initState() {
+    pullToRefreshController = PullToRefreshController(
+      onRefresh: () {
+        webViewController?.reload();
+      },
+    );
+    urlController.clear();
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     hRead = context.read<HomeProvider>();
@@ -30,6 +42,11 @@ class _HomePageState extends State<HomePage> {
               // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 UserAccountsDrawerHeader(
+                  currentAccountPicture: CircleAvatar(
+                    foregroundImage: NetworkImage(
+                      'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                    ),
+                  ),
                   decoration: BoxDecoration(color: Colors.purple.shade200),
                   accountName: Text("Daksh"),
                   accountEmail: Text("Daksh@gmail.com"),
@@ -71,15 +88,45 @@ class _HomePageState extends State<HomePage> {
               trailing: Icon(Icons.bookmark_added_rounded),
             ),
             ListTile(
-              title: Text("Chrome"),
+              title: Text("Google Search Engine"),
+              trailing: hWatch.isCheckEngine
+                  ? Icon(
+                      Icons.check,
+                      color: Colors.green,
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Colors.grey,
+                    ),
               onTap: () {
                 hRead.setIndex(0);
+                webViewController!.loadUrl(
+                  urlRequest: URLRequest(
+                    url: hWatch.allSearchEngine[0].searchEngUrl,
+                  ),
+                );
+                hRead.checkEngineStatus();
               },
             ),
             ListTile(
-              title: Text("yahoo"),
+              title: Text("Yahoo Search Engine"),
+              trailing: hWatch.isCheckEngine
+                  ? Icon(
+                      Icons.check,
+                      color: Colors.grey,
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Colors.green,
+                    ),
               onTap: () {
                 hRead.setIndex(1);
+                webViewController!.loadUrl(
+                  urlRequest: URLRequest(
+                    url: hWatch.allSearchEngine[1].searchEngUrl,
+                  ),
+                );
+                hRead.checkEngineStatus();
               },
             ),
           ],
@@ -87,36 +134,26 @@ class _HomePageState extends State<HomePage> {
       ),
       appBar: AppBar(
         title: Text("Home Page"),
-        // actions: [
-        //   PopupMenuButton(
-        //     onSelected: (value) {
-        //       hRead.setIndex(value);
-
-        //       WebUri? finaluri = hRead.allSearchEngine[value].searchEngUrl;
-        //       // 'https://www.google.co.in/';
-
-        //       webViewController?.loadUrl(urlRequest: URLRequest(url: finaluri));
-        //     },
-        //     itemBuilder: (context) {
-        //       return [
-        //         PopupMenuItem(
-        //           child: Text("Google"),
-        //           value: 0,
-        //           // onTap: () {
-        //           //   hRead.setIndex(0);
-        //           // },
-        //         ),
-        //         PopupMenuItem(
-        //           child: Text("Yahoo"),
-        //           value: 1,
-        //           // onTap: () {
-        //           //   hRead.setIndex(1);
-        //           // },
-        //         ),
-        //       ];
-        //     },
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            onPressed: () {
+              webViewController?.goBack();
+            },
+            icon: Icon(Icons.arrow_back_ios_new_rounded),
+          ),
+          IconButton(
+            onPressed: () {
+              webViewController?.reload();
+            },
+            icon: Icon(Icons.refresh_rounded),
+          ),
+          IconButton(
+            onPressed: () {
+              webViewController?.goForward();
+            },
+            icon: Icon(Icons.arrow_forward_ios_rounded),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -132,14 +169,12 @@ class _HomePageState extends State<HomePage> {
                         BorderSide(color: Colors.black38)),
                     controller: urlController,
                     onSubmitted: (value) {
-                      // var url = WebUri(value);
-                      // if (.isEmpty) {
-                      // WebUri url = WebUri("");
-
                       webViewController?.loadUrl(
-                          urlRequest: URLRequest(
-                              url: WebUri(
-                                  'https://www.google.com/search?q=${value}')));
+                        urlRequest: URLRequest(
+                          url: WebUri(
+                              '${hWatch.allSearchEngine[hWatch.index].searchEngUrl}/search?q=$value'),
+                        ),
+                      );
                       hRead.saveSearchHistory(value);
                     },
                     hintText: "Search",
@@ -165,11 +200,20 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: InAppWebView(
+              pullToRefreshController: pullToRefreshController,
+              onLoadStop: (controller, url) {
+                pullToRefreshController!.endRefreshing();
+              },
               initialUrlRequest: URLRequest(
                   url: WebUri(
                       '${hWatch.allSearchEngine[hWatch.index].searchEngUrl}')),
               onWebViewCreated: (controller) {
                 webViewController = controller;
+                webViewController!.loadUrl(
+                  urlRequest: URLRequest(
+                    url: hWatch.allSearchEngine[hWatch.index].searchEngUrl,
+                  ),
+                );
               },
               onProgressChanged: (controller, progress) {
                 hRead.changeProgressValue(progress / 100);

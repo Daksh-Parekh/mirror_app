@@ -45,4 +45,14 @@ class ShrHelper {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getStringList('bookmark');
   }
+
+  Future<void> saveEngineCheck(bool isCheckEngineArrow) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('arrow', isCheckEngineArrow);
+  }
+
+  Future<bool?> getEngineCheckArrow() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('arrow');
+  }
 }
